@@ -1,13 +1,36 @@
 import 'package:flutter/material.dart';
 import '../data/destinations.dart';
+import '../models/destination.dart';
 import '../widgets/destination_card.dart';
 import '../widgets/hero_banner.dart';
 import '../widgets/home_header.dart';
 import '../widgets/search_box.dart';
 import '../widgets/section_title.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String _categorie = 'Tout'; // l'état : la catégorie choisie
+
+  List<Destination> get _filtrees {
+    if (_categorie == 'Tout') return destinations;
+    return destinations.where((d) => d.categorie == _categorie).toList();
+  }
+
+  // Q1 : sans setState, _categorie change bien en mémoire, mais build() n'est
+  // pas rappelé : l'écran ne change pas (puce non cochée, liste identique).
+  //
+  // Q2 : _filtrees est un getter car il dépend de _categorie, qui change.
+  // Recalculé à chaque build(), il est toujours à jour. Une variable calculée
+  // une seule fois resterait figée sur l'ancienne catégorie.
+  //
+  // Q3 : HeroBanner reste un StatelessWidget car il dépend seulement de son
+  // paramètre destination, qui ne change pas. Il n'a aucun état propre.
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +38,6 @@ class HomeScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(20),
-          // pas de const devant [ : la liste contient une boucle for
           children: [
             const HomeHeader(prenom: 'Takoua'),
             const SizedBox(height: 20),
@@ -24,11 +46,31 @@ class HomeScreen extends StatelessWidget {
             HeroBanner(destination: destinations.first),
             const SizedBox(height: 24),
             const SectionTitle(titre: 'Catégories'),
-            // les puces de catégories arrivent au palier 5
+            const SizedBox(height: 12),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  for (final c in categories)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(c),
+                        selected: _categorie == c,
+                        onSelected: (_) {
+                          setState(() {
+                            _categorie = c;
+                          });
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            ),
             const SizedBox(height: 24),
             const SectionTitle(titre: 'Populaires', action: 'Voir tout'),
             const SizedBox(height: 12),
-            for (final d in destinations) DestinationCard(destination: d),
+            for (final d in _filtrees) DestinationCard(destination: d),
           ],
         ),
       ),
