@@ -22,15 +22,16 @@ class _HomeScreenState extends State<HomeScreen> {
     return destinations.where((d) => d.categorie == _categorie).toList();
   }
 
-  // Q1 : sans setState, _categorie change bien en mémoire, mais build() n'est
-  // pas rappelé : l'écran ne change pas (puce non cochée, liste identique).
+  // Q1 (palier 5) : sans setState, _categorie change bien en mémoire, mais
+  // build() n'est pas rappelé : l'écran ne change pas (puce non cochée,
+  // liste identique).
   //
-  // Q2 : _filtrees est un getter car il dépend de _categorie, qui change.
-  // Recalculé à chaque build(), il est toujours à jour. Une variable calculée
-  // une seule fois resterait figée sur l'ancienne catégorie.
+  // Q2 (palier 5) : _filtrees est un getter car il dépend de _categorie, qui
+  // change. Recalculé à chaque build(), il est toujours à jour. Une variable
+  // calculée une seule fois resterait figée sur l'ancienne catégorie.
   //
-  // Q3 : HeroBanner reste un StatelessWidget car il dépend seulement de son
-  // paramètre destination, qui ne change pas. Il n'a aucun état propre.
+  // Q3 (palier 5) : HeroBanner reste un StatelessWidget car il dépend
+  // seulement de son paramètre destination, qui ne change pas.
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +71,15 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 24),
             const SectionTitle(titre: 'Populaires', action: 'Voir tout'),
             const SizedBox(height: 12),
-            for (final d in _filtrees) DestinationCard(destination: d),
+            // Palier 6 : sans clé, Flutter associe chaque State à une POSITION
+            // dans la liste. Quand le filtre change la liste, le State du
+            // 1er emplacement (son cœur rouge) est réutilisé par la nouvelle
+            // 1re carte : le cœur apparaît sur la mauvaise destination ou
+            // disparaît. Avec ValueKey(d.nom), Flutter associe le State à la
+            // DESTINATION : tant que la carte reste affichée, son cœur la
+            // suit, même si sa position change.
+            for (final d in _filtrees)
+              DestinationCard(key: ValueKey(d.nom), destination: d),
           ],
         ),
       ),

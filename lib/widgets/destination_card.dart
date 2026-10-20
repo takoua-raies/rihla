@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/destination.dart';
+import 'favorite_button.dart';
 
 class DestinationCard extends StatelessWidget {
   final Destination destination;
@@ -11,18 +12,15 @@ class DestinationCard extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
-    // Réponse Q1 : Spacer() est un widget flexible : il prend tout l'espace
-    // libre DANS la Row. Pour cela, la Row « note / prix » doit avoir une
-    // largeur finie. Sans Expanded, la Column aurait une largeur illimitée
-    // (elle suit son contenu) et la Row interne n'aurait pas d'espace à
-    // répartir : Spacer ne pourrait pas pousser le prix à droite.
-    // Expanded donne à la Column exactement l'espace restant à côté de
-    // l'image : la largeur est finie.
+    // Réponse Q1 (palier 4) : Spacer() est un widget flexible : il prend tout
+    // l'espace libre DANS la Row. Pour cela, la Row « note / prix » doit avoir
+    // une largeur finie. Sans Expanded, la Column aurait une largeur illimitée
+    // (elle suit son contenu) et Spacer ne pourrait pas pousser le prix à
+    // droite. Expanded donne à la Column l'espace restant à côté de l'image.
     //
-    // Réponse Q2 : aucune ligne à ajouter dans DestinationCard ni dans
-    // HomeScreen. Il suffit d'ajouter un 7e objet Destination(...) dans
-    // lib/data/destinations.dart (une dizaine de lignes, comme les autres),
-    // plus son image dans assets/images/. La boucle for l'affiche toute seule.
+    // Réponse Q2 (palier 4) : aucune ligne à ajouter dans DestinationCard ni
+    // dans HomeScreen. Il suffit d'ajouter un 7e objet Destination(...) dans
+    // lib/data/destinations.dart, plus son image dans assets/images/.
     return Card(
       elevation: 0,
       color: cs.surfaceContainerLow,
@@ -87,6 +85,8 @@ class DestinationCard extends StatelessWidget {
                 ],
               ),
             ),
+            // Palier 6 : bouton favori, dernier enfant de la Row
+            const FavoriteButton(),
           ],
         ),
       ),
