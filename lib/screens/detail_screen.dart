@@ -1,11 +1,12 @@
 
-import 'package:flutter/material.dart';
 
+import 'package:flutter/material.dart';
 import 'reservation_screen.dart';
 import '../models/destination.dart';
+import '../models/reservation.dart';
 import '../widgets/favorite_button.dart';
 
-/// Devoir TP3 — Écran de détail d'une destination.
+/// Écran de détail d'une destination.
 class DetailScreen extends StatefulWidget {
   final Destination destination;
 
@@ -17,6 +18,56 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen> {
   int _voyageurs = 1;
+
+  // Ouvrir le formulaire et récupérer la réservation
+  Future<void> _reserver() async {
+    final reservation = await Navigator.push<Reservation>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReservationScreen(
+          destination: widget.destination,
+          voyageurs: _voyageurs,
+        ),
+      ),
+    );
+
+    // Si l'utilisateur revient sans confirmer
+    if (reservation == null) return;
+
+    if (!mounted) return;
+
+    // Afficher la confirmation
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(
+          Icons.check_circle,
+          color: Colors.green,
+          size: 48,
+        ),
+        title: const Text('Réservation confirmée'),
+        content: Text(
+          'Nom : ${reservation.nom}\n'
+          'Destination : ${reservation.destination.nom}\n'
+          'Voyageurs : ${reservation.voyageurs}\n'
+          'Date : ${reservation.dateDepart.day}/'
+          '${reservation.dateDepart.month}/'
+          '${reservation.dateDepart.year}\n'
+          'Formule : ${reservation.formule}\n'
+          'Total : ${reservation.total} DT\n'
+          'Email : ${reservation.email}',
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Parfait'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +101,7 @@ class _DetailScreenState extends State<DetailScreen> {
                   ),
                 ),
 
+                // Bouton Favoris
                 const Positioned(
                   top: 48,
                   right: 16,
@@ -252,20 +304,8 @@ class _DetailScreenState extends State<DetailScreen> {
 
               Expanded(
                 child: FilledButton(
-                  onPressed: () {
-
-                    // Ouvrir ReservationScreen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ReservationScreen(
-                          destination: widget.destination,
-                          voyageurs: _voyageurs,
-                        ),
-                      ),
-                    );
-
-                  },
+                  // Appeler la méthode _reserver
+                  onPressed: _reserver,
                   style: FilledButton.styleFrom(
                     minimumSize: const Size.fromHeight(56),
                   ),
@@ -342,3 +382,4 @@ class _InfoTile extends StatelessWidget {
     );
   }
 }
+

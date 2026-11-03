@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../models/destination.dart';
+import '../models/reservation.dart';
 
 class ReservationScreen extends StatefulWidget {
   final Destination destination;
@@ -15,7 +16,8 @@ class ReservationScreen extends StatefulWidget {
   });
 
   @override
-  State<ReservationScreen> createState() => _ReservationScreenState();
+  State<ReservationScreen> createState() =>
+      _ReservationScreenState();
 }
 
 class _ReservationScreenState extends State<ReservationScreen> {
@@ -111,7 +113,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
     return null;
   }
 
-  // Ouvrir le calendrier
+  // Choisir la date
   Future<void> _choisirDate() async {
     final demain = DateTime.now().add(
       const Duration(days: 1),
@@ -139,7 +141,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
     }
   }
 
-  // Valider le formulaire
+  // Valider et envoyer la réservation
   void _valider() {
     if (!_formKey.currentState!.validate()) {
       setState(() {
@@ -150,11 +152,24 @@ class _ReservationScreenState extends State<ReservationScreen> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Formulaire valide'),
-      ),
+    // Vérifier les conditions
+    if (!_conditions) {
+      return;
+    }
+
+    // Créer l'objet réservation
+    final reservation = Reservation(
+      destination: widget.destination,
+      nom: _nomCtrl.text.trim(),
+      email: _emailCtrl.text.trim(),
+      telephone: _telCtrl.text.trim(),
+      dateDepart: _date!,
+      voyageurs: widget.voyageurs,
+      formule: _formule,
     );
+
+    // Retourner la réservation au DetailScreen
+    Navigator.pop(context, reservation);
   }
 
   @override
@@ -175,7 +190,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
 
             children: [
-              // Récapitulatif du voyage
               const Text(
                 'Votre voyage',
                 style: TextStyle(
@@ -192,21 +206,18 @@ class _ReservationScreenState extends State<ReservationScreen> {
                     Icons.location_on,
                     size: 35,
                   ),
-                  title: Text(
-                    widget.destination.nom,
-                  ),
+                  title: Text(widget.destination.nom),
                   subtitle: Text(
                     '${widget.voyageurs} voyageur(s)',
                   ),
                   trailing: Text(
-                    '${widget.destination.prix} DT',
+                    '$_prixParPersonne DT',
                   ),
                 ),
               ),
 
               const SizedBox(height: 25),
 
-              // Informations personnelles
               const Text(
                 'Informations personnelles',
                 style: TextStyle(
@@ -217,6 +228,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
               const SizedBox(height: 15),
 
+              // Nom
               TextFormField(
                 controller: _nomCtrl,
                 decoration: _deco(
@@ -228,6 +240,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
               const SizedBox(height: 15),
 
+              // Email
               TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
@@ -240,6 +253,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
               const SizedBox(height: 15),
 
+              // Téléphone
               TextFormField(
                 controller: _telCtrl,
                 keyboardType: TextInputType.phone,
@@ -256,7 +270,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
               const SizedBox(height: 25),
 
-              // Date de départ
               const Text(
                 'Date de départ',
                 style: TextStyle(
@@ -267,6 +280,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
               const SizedBox(height: 15),
 
+              // Date
               TextFormField(
                 controller: _dateCtrl,
                 readOnly: true,
@@ -284,7 +298,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
               const SizedBox(height: 25),
 
-              // Choix de la formule
               const Text(
                 'Choisissez votre formule',
                 style: TextStyle(
@@ -295,27 +308,21 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
               const SizedBox(height: 15),
 
+              // Formule
               SegmentedButton<String>(
                 segments: const [
                   ButtonSegment(
                     value: 'Essentiel',
                     label: Text('Essentiel'),
-                    icon: Icon(
-                      Icons.backpack_outlined,
-                    ),
+                    icon: Icon(Icons.backpack_outlined),
                   ),
-
                   ButtonSegment(
                     value: 'Confort',
                     label: Text('Confort +30 %'),
-                    icon: Icon(
-                      Icons.hotel_outlined,
-                    ),
+                    icon: Icon(Icons.hotel_outlined),
                   ),
                 ],
-
                 selected: {_formule},
-
                 onSelectionChanged: (choix) {
                   setState(() {
                     _formule = choix.first;
@@ -325,25 +332,20 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
               const SizedBox(height: 20),
 
-              // Conditions d'annulation
+              // Conditions
               CheckboxListTile(
                 value: _conditions,
-
                 onChanged: (v) {
                   setState(() {
                     _conditions = v ?? false;
                   });
                 },
-
                 controlAffinity:
                     ListTileControlAffinity.leading,
-
                 contentPadding: EdgeInsets.zero,
-
                 title: const Text(
                   "J'accepte les conditions d'annulation",
                 ),
-
                 subtitle: const Text(
                   "Annulation gratuite jusqu'à 48 h avant",
                 ),
@@ -355,7 +357,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
         ),
       ),
 
-      // Barre du bas : prix et bouton
+      // Prix et bouton
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -366,9 +368,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
             children: [
               Text(
                 '$_prixParPersonne DT × ${widget.voyageurs}',
-                style: const TextStyle(
-                  fontSize: 16,
-                ),
+                style: const TextStyle(fontSize: 16),
               ),
 
               const SizedBox(height: 5),
@@ -385,12 +385,8 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
               SizedBox(
                 width: double.infinity,
-
                 child: FilledButton(
-                  onPressed: _conditions
-                      ? _valider
-                      : null,
-
+                  onPressed: _conditions ? _valider : null,
                   child: const Text('Confirmer'),
                 ),
               ),
@@ -401,3 +397,4 @@ class _ReservationScreenState extends State<ReservationScreen> {
     );
   }
 }
+

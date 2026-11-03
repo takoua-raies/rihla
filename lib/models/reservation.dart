@@ -1,3 +1,4 @@
+
 import 'destination.dart';
 
 class Reservation {
@@ -7,7 +8,7 @@ class Reservation {
   final String telephone;
   final DateTime dateDepart;
   final int voyageurs;
-  final String formule; // 'Essentiel' ou 'Confort'
+  final String formule;
 
   const Reservation({
     required this.destination,
@@ -19,10 +20,15 @@ class Reservation {
     required this.formule,
   });
 
-  // Formule Confort : +30 % sur le prix par personne.
-  int get prixParPersonne => formule == 'Confort'
-      ? (destination.prix * 1.3).round()
-      : destination.prix;
+  // Prix par personne
+  int get prixParPersonne {
+    return formule == 'Confort'
+        ? (destination.prix * 1.3).round()
+        : destination.prix;
+  }
 
-  int get total => prixParPersonne * voyageurs;
+  // Prix total
+  int get total {
+    return prixParPersonne * voyageurs;
+  }
 }
