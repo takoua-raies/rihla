@@ -1,9 +1,12 @@
 
 import 'package:flutter/material.dart';
 import '../data/destinations.dart';
+import '../models/destination.dart';
+import '../widgets/destination_card.dart';
+import '../widgets/hero_banner.dart';
 import '../widgets/home_header.dart';
 import '../widgets/search_box.dart';
-import '../widgets/hero_banner.dart';
+import '../widgets/section_title.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,28 +16,52 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Onglet sélectionné : 0 = Explorer
-  int _onglet = 0;
+  String _categorie = 'Tout'; 
+  int _onglet = 0; 
 
-  // Contenu de la page d'accueil
+  List<Destination> get _filtrees {
+    if (_categorie == 'Tout') return destinations;
+    return destinations.where((d) => d.categorie == _categorie).toList();
+  }
+
   Widget _construireAccueil() {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
         const HomeHeader(prenom: 'Takoua'),
-
         const SizedBox(height: 20),
-
         const SearchBox(),
-
+        const SizedBox(height: 20),
+        HeroBanner(destination: destinations.first),
         const SizedBox(height: 24),
-
-        HeroBanner(
-          destination: destinations.first,
+        const SectionTitle(titre: 'Catégories'),
+        const SizedBox(height: 12),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (final c in categories)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(c),
+                    selected: _categorie == c,
+                    onSelected: (_) {
+                      setState(() {
+                        _categorie = c;
+                      });
+                    },
+                  ),
+                ),
+            ],
+          ),
         ),
-
-        // Si tu as déjà les catégories et les cartes
-        // des paliers précédents, ajoute-les ici.
+        const SizedBox(height: 24),
+        const SectionTitle(titre: 'Populaires', action: 'Voir tout'),
+        const SizedBox(height: 12),
+        
+        for (final d in _filtrees)
+          DestinationCard(key: ValueKey(d.nom), destination: d),
       ],
     );
   }
@@ -45,24 +72,15 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: _onglet == 0
             ? _construireAccueil()
-            : Center(
-                child: Text(
-                  'Bientôt disponible',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ),
+            : const Center(child: Text('Bientôt disponible')),
       ),
-
-      // Barre de navigation en bas
       bottomNavigationBar: NavigationBar(
         selectedIndex: _onglet,
-
         onDestinationSelected: (index) {
           setState(() {
             _onglet = index;
           });
         },
-
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.explore_outlined),
