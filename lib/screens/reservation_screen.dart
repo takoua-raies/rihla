@@ -37,14 +37,12 @@ class _ReservationScreenState extends State<ReservationScreen> {
   AutovalidateMode _autoValidation =
       AutovalidateMode.disabled;
 
-  // Calcul du prix par personne
   int get _prixParPersonne {
     return _formule == 'Confort'
         ? (widget.destination.prix * 1.3).round()
         : widget.destination.prix;
   }
 
-  // Calcul du prix total
   int get _total {
     return _prixParPersonne * widget.voyageurs;
   }
@@ -59,7 +57,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
     super.dispose();
   }
 
-  // Decoration des champs
+  
   InputDecoration _deco(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
@@ -70,7 +68,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
     );
   }
 
-  // Validation du nom
+  
   String? _validerNom(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Entrez votre nom';
@@ -83,7 +81,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
     return null;
   }
 
-  // Validation de l'email
+  
   String? _validerEmail(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Entrez votre email';
@@ -100,7 +98,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
     return null;
   }
 
-  // Validation du téléphone
+  
   String? _validerTel(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Entrez votre téléphone';
@@ -113,7 +111,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
     return null;
   }
 
-  // Choisir la date
   Future<void> _choisirDate() async {
     final demain = DateTime.now().add(
       const Duration(days: 1),
@@ -141,7 +138,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
     }
   }
 
-  // Valider et envoyer la réservation
   void _valider() {
     if (!_formKey.currentState!.validate()) {
       setState(() {
@@ -152,12 +148,10 @@ class _ReservationScreenState extends State<ReservationScreen> {
       return;
     }
 
-    // Vérifier les conditions
     if (!_conditions) {
       return;
     }
 
-    // Créer l'objet réservation
     final reservation = Reservation(
       destination: widget.destination,
       nom: _nomCtrl.text.trim(),
@@ -168,7 +162,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
       formule: _formule,
     );
 
-    // Retourner la réservation au DetailScreen
     Navigator.pop(context, reservation);
   }
 

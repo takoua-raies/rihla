@@ -20,14 +20,13 @@ class Reservation {
     required this.formule,
   });
 
-  // Prix par personne
   int get prixParPersonne {
     return formule == 'Confort'
         ? (destination.prix * 1.3).round()
         : destination.prix;
   }
 
-  // Prix total
+  
   int get total {
     return prixParPersonne * voyageurs;
   }
