@@ -1,10 +1,11 @@
+
 import 'package:flutter/material.dart';
 
+import 'reservation_screen.dart';
 import '../models/destination.dart';
 import '../widgets/favorite_button.dart';
 
-/// Devoir TP3 — Écran de détail d'une destination (version du kit TP4).
-/// À relier aux cartes au palier 2 du TP4.
+/// Devoir TP3 — Écran de détail d'une destination.
 class DetailScreen extends StatefulWidget {
   final Destination destination;
 
@@ -33,25 +34,33 @@ class _DetailScreenState extends State<DetailScreen> {
               fit: StackFit.expand,
               children: [
                 Image.asset(d.image, fit: BoxFit.cover),
+
+                // Bouton Retour
                 Positioned(
                   top: 48,
                   left: 16,
                   child: _BoutonRond(
                     child: IconButton(
                       tooltip: 'Retour',
-                      onPressed: () {}, // TP4 palier 2
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
                       icon: const Icon(Icons.arrow_back),
                     ),
                   ),
                 ),
+
                 const Positioned(
                   top: 48,
                   right: 16,
-                  child: _BoutonRond(child: FavoriteButton()),
+                  child: _BoutonRond(
+                    child: FavoriteButton(),
+                  ),
                 ),
               ],
             ),
           ),
+
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -71,19 +80,29 @@ class _DetailScreenState extends State<DetailScreen> {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              Icon(Icons.place_outlined,
-                                  size: 18, color: cs.onSurfaceVariant),
+                              Icon(
+                                Icons.place_outlined,
+                                size: 18,
+                                color: cs.onSurfaceVariant,
+                              ),
                               const SizedBox(width: 4),
-                              Text(d.region,
-                                  style: TextStyle(color: cs.onSurfaceVariant)),
+                              Text(
+                                d.region,
+                                style: TextStyle(
+                                  color: cs.onSurfaceVariant,
+                                ),
+                              ),
                             ],
                           ),
                         ],
                       ),
                     ),
+
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: cs.secondaryContainer,
                         borderRadius: BorderRadius.circular(12),
@@ -91,61 +110,92 @@ class _DetailScreenState extends State<DetailScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.star_rounded,
-                              color: Colors.amber, size: 20),
+                          const Icon(
+                            Icons.star_rounded,
+                            color: Colors.amber,
+                            size: 20,
+                          ),
                           const SizedBox(width: 4),
-                          Text('${d.note}',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold)),
+                          Text(
+                            '${d.note}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 20),
+
                 Row(
                   children: [
                     Expanded(
                       child: _InfoTile(
-                          icone: Icons.schedule, label: 'Durée', valeur: d.duree),
+                        icone: Icons.schedule,
+                        label: 'Durée',
+                        valeur: d.duree,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: _InfoTile(
-                          icone: Icons.category_outlined,
-                          label: 'Type',
-                          valeur: d.categorie),
+                        icone: Icons.category_outlined,
+                        label: 'Type',
+                        valeur: d.categorie,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     const Expanded(
                       child: _InfoTile(
-                          icone: Icons.groups_outlined,
-                          label: 'Groupe',
-                          valeur: 'Max 12'),
+                        icone: Icons.groups_outlined,
+                        label: 'Groupe',
+                        valeur: 'Max 12',
+                      ),
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 24),
-                Text('À propos',
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.bold)),
+
+                Text(
+                  'À propos',
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+
                 const SizedBox(height: 8),
-                Text(d.description,
-                    style: TextStyle(height: 1.5, color: cs.onSurfaceVariant)),
+
+                Text(
+                  d.description,
+                  style: TextStyle(
+                    height: 1.5,
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+
                 const SizedBox(height: 24),
+
+                // Nombre de voyageurs
                 Row(
                   children: [
                     Expanded(
-                      child: Text('Voyageurs',
-                          style: theme.textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold)),
+                      child: Text(
+                        'Voyageurs',
+                        style: theme.textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
                     ),
+
                     IconButton.outlined(
                       onPressed: _voyageurs > 1
                           ? () => setState(() => _voyageurs--)
                           : null,
                       icon: const Icon(Icons.remove),
                     ),
+
                     SizedBox(
                       width: 40,
                       child: Text(
@@ -154,18 +204,24 @@ class _DetailScreenState extends State<DetailScreen> {
                         style: theme.textTheme.titleLarge,
                       ),
                     ),
+
                     IconButton.outlined(
-                      onPressed: () => setState(() => _voyageurs++),
+                      onPressed: () {
+                        setState(() {
+                          _voyageurs++;
+                        });
+                      },
                       icon: const Icon(Icons.add),
                     ),
                   ],
                 ),
-
               ],
             ),
           ),
         ],
       ),
+
+      // Barre de réservation
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
@@ -175,7 +231,13 @@ class _DetailScreenState extends State<DetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Total', style: TextStyle(color: cs.onSurfaceVariant)),
+                  Text(
+                    'Total',
+                    style: TextStyle(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+
                   Text(
                     '${d.prix * _voyageurs} DT',
                     style: theme.textTheme.headlineSmall?.copyWith(
@@ -185,10 +247,25 @@ class _DetailScreenState extends State<DetailScreen> {
                   ),
                 ],
               ),
+
               const SizedBox(width: 20),
+
               Expanded(
                 child: FilledButton(
-                  onPressed: () {}, // TP4 palier 3 puis 5
+                  onPressed: () {
+
+                    // Ouvrir ReservationScreen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ReservationScreen(
+                          destination: widget.destination,
+                          voyageurs: _voyageurs,
+                        ),
+                      ),
+                    );
+
+                  },
                   style: FilledButton.styleFrom(
                     minimumSize: const Size.fromHeight(56),
                   ),
@@ -203,6 +280,7 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 }
 
+// Bouton rond
 class _BoutonRond extends StatelessWidget {
   final Widget child;
 
@@ -220,6 +298,7 @@ class _BoutonRond extends StatelessWidget {
   }
 }
 
+// Informations de destination
 class _InfoTile extends StatelessWidget {
   final IconData icone;
   final String label;
@@ -245,8 +324,19 @@ class _InfoTile extends StatelessWidget {
         children: [
           Icon(icone, color: cs.primary),
           const SizedBox(height: 6),
-          Text(label, style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant)),
-          Text(valeur, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+          Text(
+            valeur,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
