@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../models/destination.dart';
 import '../models/reservation.dart';
-import '../screens/reservation_screen.dart';
+import '../services/api_service.dart';
 import '../widgets/favorite_button.dart';
+import 'reservation_screen.dart';
 
 class DetailScreen extends StatefulWidget {
   final Destination destination;
@@ -20,169 +21,164 @@ class DetailScreen extends StatefulWidget {
 class _DetailScreenState extends State<DetailScreen> {
   int _voyageurs = 1;
 
-  Destination get d => widget.destination;
-
+  // Ouvrir le formulaire et enregistrer la réservation
   Future<void> _reserver() async {
-    final Reservation? reservation = await Navigator.push<Reservation>(
+    // Ouvrir le formulaire de réservation
+    final reservation = await Navigator.push<Reservation>(
       context,
       MaterialPageRoute(
         builder: (context) => ReservationScreen(
-          destination: d,
+          destination: widget.destination,
           voyageurs: _voyageurs,
         ),
       ),
     );
 
-    if (reservation == null || !mounted) {
+    // Vérifier si l'utilisateur a annulé
+    if (reservation == null) return;
+
+    if (!mounted) return;
+
+    final String id;
+
+    // Envoyer la réservation au serveur
+    try {
+      id = await ApiService.creerReservation(reservation);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Envoi impossible : json-server est-il lancé ?',
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+
       return;
     }
 
-    showDialog(
+    if (!mounted) return;
+
+    // Afficher la confirmation
+    await showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Réservation confirmée !'),
-        content: Text(
-          'Merci ${reservation.nom} !\n\n'
-          'Destination : ${reservation.destination.nom}\n'
-          'Voyageurs : ${reservation.voyageurs}\n'
-          'Formule : ${reservation.formule}\n'
-          'Total : ${reservation.total} DT',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text('OK'),
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Réservation confirmée !'),
+          content: Text(
+            'Votre réservation a été enregistrée avec succès.\n\n'
+            'N° de réservation : $id',
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
+    final destination = widget.destination;
 
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 300,
-            pinned: true,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.pop(context),
+      appBar: AppBar(
+        title: Text(destination.nom),
+        actions: [
+          // Même état que la carte : tout vient de FavorisModel
+          FavoriteButton(destination: destination),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image de destination
+            Image.asset(
+              destination.image,
+              width: double.infinity,
+              height: 250,
+              fit: BoxFit.cover,
             ),
-            actions: const [
-              FavoriteButton(),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: Hero(
-                tag: 'image-${d.nom}',
-                child: Image.asset(
-                  d.image,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                ),
-              ),
-            ),
-          ),
 
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
+            Padding(
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Nom
                   Text(
-                    d.nom,
-                    style: theme.textTheme.headlineMedium?.copyWith(
+                    destination.nom,
+                    style: const TextStyle(
+                      fontSize: 25,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
 
                   const SizedBox(height: 8),
 
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.place_outlined,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(d.region),
-                      const Spacer(),
-                      const Icon(
-                        Icons.star,
-                        color: Colors.amber,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 4),
-                      Text('${d.note}'),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
+                  // Région
                   Text(
-                    'Description',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
+                    destination.region,
+                    style: const TextStyle(
+                      fontSize: 16,
                     ),
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 15),
 
+                  // Description
                   Text(
-                    d.description,
-                    style: theme.textTheme.bodyLarge,
+                    destination.description,
+                    style: const TextStyle(
+                      fontSize: 16,
+                    ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 15),
 
-                  Row(
-                    children: [
-                      _infoItem(
-                        Icons.schedule,
-                        d.duree,
-                      ),
-                      const SizedBox(width: 20),
-                      _infoItem(
-                        Icons.category_outlined,
-                        d.categorie,
-                      ),
-                    ],
+                  // Prix
+                  Text(
+                    'Prix : ${destination.prix} DT',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
 
                   const SizedBox(height: 25),
 
-                  Text(
-                    'Nombre de voyageurs',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
+                  // Nombre de voyageurs
                   Row(
                     children: [
+                      const Text(
+                        'Voyageurs : ',
+                        style: TextStyle(fontSize: 16),
+                      ),
+
                       IconButton(
-                        onPressed: _voyageurs > 1
-                            ? () {
-                                setState(() {
-                                  _voyageurs--;
-                                });
-                              }
-                            : null,
-                        icon: const Icon(Icons.remove_circle_outline),
+                        onPressed: () {
+                          if (_voyageurs > 1) {
+                            setState(() {
+                              _voyageurs--;
+                            });
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.remove_circle_outline,
+                        ),
                       ),
 
                       Text(
                         '$_voyageurs',
-                        style: theme.textTheme.titleLarge,
+                        style: const TextStyle(fontSize: 18),
                       ),
 
                       IconButton(
@@ -191,60 +187,34 @@ class _DetailScreenState extends State<DetailScreen> {
                             _voyageurs++;
                           });
                         },
-                        icon: const Icon(Icons.add_circle_outline),
+                        icon: const Icon(
+                          Icons.add_circle_outline,
+                        ),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 25),
+
+                  // Bouton réserver
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _reserver,
+                      icon: const Icon(
+                        Icons.flight_takeoff,
+                      ),
+                      label: const Text(
+                        'Réserver maintenant',
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Prix par personne'),
-                    Text(
-                      '${d.prix} DT',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: cs.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              ElevatedButton(
-                onPressed: _reserver,
-                child: const Text('Réserver'),
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );
   }
-
-  Widget _infoItem(IconData icon, String value) {
-    return Row(
-      children: [
-        Icon(icon, size: 18),
-        const SizedBox(width: 6),
-        Text(value),
-      ],
-    );
-  }
 }
-
