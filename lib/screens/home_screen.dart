@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../data/destinations.dart';
 import '../models/destination.dart';
+import '../providers/favoris_model.dart';
 import '../services/api_service.dart';
 import '../widgets/destination_card.dart';
 import '../widgets/hero_banner.dart';
 import '../widgets/home_header.dart';
 import '../widgets/search_box.dart';
 import '../widgets/section_title.dart';
+import 'favoris_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -121,11 +124,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // watch : la barre se reconstruit quand le nombre de favoris change
+    final nombre = context.watch<FavorisModel>().nombre;
+
     return Scaffold(
       body: SafeArea(
-        child: _onglet == 0
-            ? _construireExplorer()
-            : const Center(child: Text('Bientôt disponible')),
+        child: switch (_onglet) {
+          0 => _construireExplorer(),
+          1 => const FavorisScreen(),
+          _ => const Center(child: Text('Bientôt disponible')),
+        },
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _onglet,
@@ -134,18 +142,27 @@ class _HomeScreenState extends State<HomeScreen> {
             _onglet = index;
           });
         },
-        destinations: const [
-          NavigationDestination(
+        // pas de const : le badge dépend de `nombre`
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.explore_outlined),
             selectedIcon: Icon(Icons.explore),
             label: 'Explorer',
           ),
           NavigationDestination(
-            icon: Icon(Icons.favorite_border),
-            selectedIcon: Icon(Icons.favorite),
+            icon: Badge(
+              isLabelVisible: nombre > 0,
+              label: Text('$nombre'),
+              child: const Icon(Icons.favorite_border),
+            ),
+            selectedIcon: Badge(
+              isLabelVisible: nombre > 0,
+              label: Text('$nombre'),
+              child: const Icon(Icons.favorite),
+            ),
             label: 'Favoris',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
             label: 'Profil',
