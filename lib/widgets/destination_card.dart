@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../models/destination.dart';
 import '../screens/detail_screen.dart';
@@ -25,7 +24,6 @@ class DestinationCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       clipBehavior: Clip.antiAlias,
-
       child: InkWell(
         onTap: () {
           Navigator.push(
@@ -37,10 +35,8 @@ class DestinationCard extends StatelessWidget {
             ),
           );
         },
-
         child: Padding(
           padding: const EdgeInsets.all(10),
-
           child: Row(
             children: [
               // Image avec animation Hero
@@ -56,13 +52,10 @@ class DestinationCard extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(width: 14),
-
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-
                   children: [
                     Text(
                       destination.nom,
@@ -70,9 +63,7 @@ class DestinationCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const SizedBox(height: 4),
-
                     Row(
                       children: [
                         Icon(
@@ -80,9 +71,7 @@ class DestinationCard extends StatelessWidget {
                           size: 16,
                           color: cs.onSurfaceVariant,
                         ),
-
                         const SizedBox(width: 4),
-
                         Expanded(
                           child: Text(
                             destination.region,
@@ -93,9 +82,7 @@ class DestinationCard extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 8),
-
                     Row(
                       children: [
                         const Icon(
@@ -103,13 +90,9 @@ class DestinationCard extends StatelessWidget {
                           color: Colors.amber,
                           size: 16,
                         ),
-
                         const SizedBox(width: 4),
-
                         Text('${destination.note}'),
-
                         const Spacer(),
-
                         Text(
                           '${destination.prix} DT',
                           style: theme.textTheme.titleSmall?.copyWith(
@@ -123,8 +106,8 @@ class DestinationCard extends StatelessWidget {
                 ),
               ),
 
-              // Bouton favori
-              const FavoriteButton(),
+              // Bouton favori : reçoit la destination, l'état est dans FavorisModel
+              FavoriteButton(destination: destination),
             ],
           ),
         ),
